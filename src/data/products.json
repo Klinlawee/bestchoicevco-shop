@@ -1,0 +1,238 @@
+{
+  "products": [
+    {
+      "id": "vco-100ml",
+      "name": "Virgin Coconut Oil - 100ml",
+      "price": 35.00,
+      "currency": "GHS",
+      "size": "100ml",
+      "description": "Perfect for travel and trying our premium cold-pressed virgin coconut oil.",
+      "benefits": [
+        "Moisturizes skin",
+        "Nourishes hair",
+        "Great for cooking",
+        "Easy to carry"
+      ],
+      "images": [
+        "/images/products/100ml_1.webp",
+        "/images/products/100ml_2.webp"
+      ],
+      "category": "personal",
+      "inStock": true,
+      "keywords": ["small", "travel", "starter"]
+    },
+    {
+      "id": "vco-250ml",
+      "name": "Virgin Coconut Oil - 250ml",
+      "price": 75.00,
+      "currency": "GHS",
+      "size": "250ml",
+      "description": "Our popular personal size, great for regular use.",
+      "benefits": [
+        "Deep hair conditioning",
+        "Body moisturizer",
+        "Healthy cooking oil",
+        "Oil pulling"
+      ],
+      "images": [
+        "/images/products/250ml_1.webp"
+      ],
+      "category": "personal",
+      "inStock": true,
+      "keywords": ["regular", "daily", "beauty"]
+    },
+    {
+      "id": "vco-500ml",
+      "name": "Virgin Coconut Oil - 500ml",
+      "price": 100.00,
+      "currency": "GHS",
+      "size": "500ml",
+      "description": "Family size for those who use coconut oil frequently.",
+      "benefits": [
+        "Bulk cooking",
+        "Hair masks",
+        "Body massage",
+        "Homemade products"
+      ],
+      "images": [
+        "/images/products/500ml_1.webp",
+        "/images/products/500ml_2.webp"
+      ],
+      "category": "family",
+      "inStock": true,
+      "keywords": ["family", "medium", "value"]
+    },
+    {
+      "id": "vco-750ml",
+      "name": "Virgin Coconut Oil - 750ml",
+      "price": 150.00,
+      "currency": "GHS",
+      "size": "750ml",
+      "description": "Ideal for heavy home use, offering great value.",
+      "benefits": [
+        "All-purpose cooking",
+        "Weekly hair treatments",
+        "Full body massage",
+        "Natural sunscreen"
+      ],
+      "images": [
+        "/images/products/750ml_1.webp"
+      ],
+      "category": "family",
+      "inStock": true,
+      "keywords": ["large", "home", "economy"]
+    },
+    {
+      "id": "vco-1liter",
+      "name": "Virgin Coconut Oil - 1 Liter",
+      "price": 180.00,
+      "currency": "GHS",
+      "size": "1L",
+      "description": "Economy liter size perfect for daily use.",
+      "benefits": [
+        "Daily cooking oil",
+        "Hair and skin care",
+        "Oil pulling",
+        "Great value"
+      ],
+      "images": [
+        "/images/products/1liter_1.webp",
+        "/images/products/1liter_2.webp"
+      ],
+      "category": "bulk",
+      "inStock": true,
+      "keywords": ["liter", "family", "economy"]
+    },
+    {
+      "id": "vco-2liter",
+      "name": "Virgin Coconut Oil - 2 Liters",
+      "price": 240.00,
+      "currency": "GHS",
+      "size": "2L",
+      "description": "Bulk size for heavy users. Perfect for small businesses.",
+      "benefits": [
+        "Commercial cooking",
+        "Bulk beauty treatments",
+        "Soap making",
+        "Excellent value"
+      ],
+      "images": [
+        "/images/products/5litre_1.webp",
+        "/images/products/5litre_2.webp"
+      ],
+      "category": "bulk",
+      "inStock": true,
+      "keywords": ["bulk", "business", "wholesale"]
+    },
+    {
+      "id": "vco-5liter",
+      "name": "Virgin Coconut Oil - 5 Liters",
+      "price": 350.00,
+      "currency": "GHS",
+      "size": "5L",
+      "description": "Wholesale size for businesses and serious home users.",
+      "benefits": [
+        "Restaurant supply",
+        "Cosmetic production",
+        "Bulk cooking",
+        "Maximum savings"
+      ],
+      "images": [
+        "/images/products/5litre_1.webp",
+        "/images/products/5litre_2.webp"
+      ],
+      "category": "wholesale",
+      "inStock": true,
+      "keywords": ["wholesale", "business", "bulk"]
+    },
+    {
+      "id": "vco-10liter",
+      "name": "Virgin Coconut Oil - 10 Liters",
+      "price": 650.00,
+      "currency": "GHS",
+      "size": "10L",
+      "description": "Commercial size for small-scale manufacturers.",
+      "benefits": [
+        "Commercial kitchen",
+        "Manufacturing",
+        "Event catering",
+        "Best per-liter price"
+      ],
+      "images": [
+        "/images/products/10liter_1.webp",
+        "/images/products/10litre_2.webp"
+      ],
+      "category": "commercial",
+      "inStock": true,
+      "keywords": ["commercial", "business", "manufacturing"]
+    },
+    {
+      "id": "vco-15liter",
+      "name": "Virgin Coconut Oil - 15 Liters",
+      "price": 1000.00,
+      "currency": "GHS",
+      "size": "15L",
+      "description": "Large commercial container for high volume needs.",
+      "benefits": [
+        "High-volume production",
+        "Hotel supply",
+        "Institutional cooking",
+        "Superior economy"
+      ],
+      "images": [
+        "/images/products/15litre_1.webp",
+        "/images/products/15litre_2.webp"
+      ],
+      "category": "commercial",
+      "inStock": true,
+      "keywords": ["institutional", "hotel", "restaurant"]
+    },
+    {
+      "id": "vco-25liter",
+      "name": "Virgin Coconut Oil - 25 Liters",
+      "price": 1700.00,
+      "currency": "GHS",
+      "size": "25L",
+      "description": "Industrial size perfect for manufacturers.",
+      "benefits": [
+        "Industrial production",
+        "Export preparation",
+        "Manufacturing base",
+        "Maximum economy"
+      ],
+      "images": [
+        "/images/products/25liter_1.webp",
+        "/images/products/25liter_2.webp"
+      ],
+      "category": "industrial",
+      "inStock": true,
+      "keywords": ["industrial", "manufacturing", "export"]
+    },
+    {
+      "id": "vco-208liter",
+      "name": "Virgin Coconut Oil - 208 Liters (Barrel)",
+      "price": 14100.00,
+      "currency": "GHS",
+      "size": "208L",
+      "description": "Full barrel for large-scale industrial use.",
+      "benefits": [
+        "Industrial scale",
+        "Export volume",
+        "Maximum savings",
+        "Bulk processing"
+      ],
+      "images": [
+        "/images/products/208liter_1.webp",
+        "/images/products/208liter_2.webp"
+      ],
+      "category": "industrial",
+      "inStock": true,
+      "keywords": ["barrel", "industrial", "export", "wholesale"]
+    }
+  ],
+  "policies": {
+    "return": "Returns accepted within 7 days of delivery for unopened products.",
+    "refund": "Full refund processed within 5-7 business days after return inspection.",
+    "delivery": "Free delivery within Accra. Delivery within 2-3 business days nationwide."
+  }
+}
