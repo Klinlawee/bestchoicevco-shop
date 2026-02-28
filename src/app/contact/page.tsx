@@ -33,9 +33,9 @@ export default function ContactPage() {
             Have questions about our products? Want to place a bulk order? We'd love to hear from you.
           </p>
           <div className="space-y-4">
-            <div><h3 className="font-semibold">📍 Address</h3><p className="text-gray-600">Accra, Ghana</p></div>
-            <div><h3 className="font-semibold">📞 Phone</h3><p className="text-gray-600">+233 XX XXX XXXX</p></div>
-            <div><h3 className="font-semibold">✉️ Email</h3><p className="text-gray-600">info@bestchoicevco.com</p></div>
+            <div><h3 className="font-semibold">📍 Address</h3><p className="text-gray-600">Bortianor Hills, Accra, Ghana</p></div>
+            <div><h3 className="font-semibold">📞 Phone</h3><p className="text-gray-600">+233 245834558</p></div>
+            <div><h3 className="font-semibold">✉️ Email</h3><p className="text-gray-600">bestchoicevirgincoconutoil@gmail.com</p></div>
           </div>
         </div>
         <div>
