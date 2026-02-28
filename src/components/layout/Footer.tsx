@@ -20,7 +20,7 @@ export default function Footer() {
   }, [])
 
   const socialLinks = [
-    { icon: FaWhatsapp, href: 'https://wa.me/233XXXXXXXXX', label: 'WhatsApp', color: 'hover:text-green-500' },
+    { icon: FaWhatsapp, href: 'https://wa.me/233245834558', label: 'WhatsApp', color: 'hover:text-green-500' },
     { icon: FaInstagram, href: 'https://instagram.com/bestchoicevco', label: 'Instagram', color: 'hover:text-pink-500' },
     { icon: FaFacebook, href: 'https://facebook.com/bestchoicevco', label: 'Facebook', color: 'hover:text-blue-500' },
     { icon: FaTiktok, href: 'https://tiktok.com/@bestchoicevco', label: 'TikTok', color: 'hover:text-black' },
@@ -141,7 +141,7 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center justify-center lg:justify-start space-x-2">
                   <span>📞</span>
-                  <span>+233 XX XXX XXXX</span>
+                  <span>+233 245 834 558</span>
                 </li>
                 <li className="flex items-center justify-center lg:justify-start space-x-2">
                   <span>✉️</span>

@@ -12,7 +12,7 @@ export default function ContactPage() {
     setStatus('sending')
     try {
       // Replace with your actual form submission endpoint
-      await fetch('https://formsubmit.co/ajax/your-email@example.com', {
+      await fetch('https://formsubmit.co/ajax/bestchoicevirgincoconutoil@gmail.com', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
