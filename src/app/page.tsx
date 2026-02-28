@@ -42,7 +42,7 @@ export default function HomePage() {
         <div className="absolute inset-0 flex items-center justify-center text-center px-4">
           <div className="text-white max-w-4xl">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
-              Pure Virgin Coconut Oil
+              Best Choice Virgin Coconut Oil
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
               Cold-pressed, organic, and perfect for hair, skin, and cooking
