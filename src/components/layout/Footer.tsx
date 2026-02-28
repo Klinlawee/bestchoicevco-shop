@@ -145,7 +145,7 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center justify-center lg:justify-start space-x-2">
                   <span>✉️</span>
-                  <span>info@bestchoicevco.com</span>
+                  <span>bestchoicevirgincoconutoil@gmail.com</span>
                 </li>
               </ul>
             </div>
