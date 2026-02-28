@@ -28,9 +28,9 @@ export default function Footer() {
 
   return (
     <>
-      {/* Collapsible Social Container for Mobile */}
+      {/* Collapsible Social Container for Mobile - Positioned near footer */}
       {isMobile && (
-        <div className="fixed right-4 bottom-24 z-50">
+        <div className="fixed right-4 bottom-32 z-50">
           {/* Main social button */}
           <button
             onClick={() => setIsSocialOpen(!isSocialOpen)}
@@ -48,8 +48,8 @@ export default function Footer() {
             )}
           </button>
 
-          {/* Expandable social icons */}
-          <div className={`flex flex-col space-y-3 transition-all duration-300 ${isSocialOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-0 pointer-events-none'}`}>
+          {/* Expandable social icons - positioned above the button */}
+          <div className={`absolute bottom-16 right-0 flex flex-col-reverse space-y-reverse space-y-3 transition-all duration-300 ${isSocialOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-0 pointer-events-none'}`}>
             {socialLinks.map((social, index) => {
               const Icon = social.icon
               return (
@@ -73,7 +73,7 @@ export default function Footer() {
 
       {/* Original floating icons for desktop (keep as is) */}
       {!isMobile && (
-        <div className="fixed right-4 bottom-24 z-50 flex flex-col space-y-3">
+        <div className="fixed right-4 bottom-32 z-50 flex flex-col space-y-3">
           {socialLinks.map((social, index) => {
             const Icon = social.icon
             return (
