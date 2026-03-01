@@ -15,7 +15,11 @@ export const metadata: Metadata = {
   description: 'Premium Virgin Coconut Oil for hair, skin, and cooking',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>

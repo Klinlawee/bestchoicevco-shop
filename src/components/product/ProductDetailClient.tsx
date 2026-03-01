@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import WishlistButton from './WishlistButton'
 
 interface Product {
   id: string; name: string; price: number; currency: string; size: string;
@@ -63,7 +64,10 @@ export default function ProductDetailClient({ product, policies }: ProductDetail
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
         <div>
-          <div className="bg-gray-100 rounded-lg p-4 sm:p-6 md:p-8 flex items-center justify-center mb-4">
+          <div className="bg-gray-100 rounded-lg p-4 sm:p-6 md:p-8 flex items-center justify-center mb-4 relative">
+            <div className="absolute top-4 right-4 z-10">
+              <WishlistButton product={product} />
+            </div>
             <div className="relative w-full h-64 sm:h-80 md:h-96">
               {product.images && product.images[selectedImage] ? (
                 <Image
@@ -108,7 +112,10 @@ export default function ProductDetailClient({ product, policies }: ProductDetail
         </div>
 
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
+          <div className="flex justify-between items-start">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">{product.name}</h1>
+            <WishlistButton product={product} />
+          </div>
           
           <div className="flex items-center justify-between mb-4">
             <p className="text-2xl sm:text-3xl font-bold text-[#2c6e49]">

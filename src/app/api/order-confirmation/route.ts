@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     // Send email to customer
     await resend.emails.send({
-      from: 'BestChoiceVCO <onboarding@resend.dev>', // Using Resend's default sender for now
+      from: 'BestChoiceVCO <onboarding@resend.dev>',
       to: customerEmail,
       subject: `Order Confirmation #${reference}`,
       html: `
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     // Also send notification to store owner
     await resend.emails.send({
       from: 'BestChoiceVCO <onboarding@resend.dev>',
-      to: 'godsonmorri@gmail.com', // Your email
+      to: 'godsonmorri@gmail.com',
       subject: `New Order Received: ${reference}`,
       html: `
         <h2>New Order Alert!</h2>
