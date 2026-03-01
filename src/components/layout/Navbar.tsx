@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { MagnifyingGlassIcon, ShoppingCartIcon, UserIcon, Bars3Icon, XMarkIcon, HeartIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { 
+  MagnifyingGlassIcon, 
+  ShoppingCartIcon, 
+  UserIcon, 
+  Bars3Icon, 
+  XMarkIcon, 
+  HeartIcon,
+  ArrowRightOnRectangleIcon 
+} from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase/client'
 import { useWishlist } from '@/context/WishlistContext'
 
@@ -166,7 +174,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Navigation - IMPROVED VERSION */}
+        {/* Mobile Navigation - HIGHLY VISIBLE LOGOUT */}
         {isOpen && (
           <div className="md:hidden py-4 border-t bg-white">
             {/* Search Bar */}
@@ -189,54 +197,58 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* User Section - Clearly Separated */}
-            <div className="mt-4 pt-4 border-t-2 border-gray-200">
+            {/* User Section - HIGHLIGHTED */}
+            <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
               {user ? (
                 <>
-                  {/* User Info */}
-                  <div className="px-2 pb-3">
-                    <p className="text-sm font-medium text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
+                  {/* User Info with Background */}
+                  <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                   </div>
                   
-                  {/* User Actions */}
-                  <Link href="/profile" 
-                    className="block py-3 px-2 text-base text-gray-700 hover:text-[#2c6e49] hover:bg-gray-50 font-medium border-b border-gray-100"
-                    onClick={() => setIsOpen(false)}>
-                    <UserIcon className="w-5 h-5 inline mr-2" />
-                    Profile
-                  </Link>
+                  {/* User Action Links */}
+                  <div className="space-y-2">
+                    <Link href="/profile" 
+                      className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                      onClick={() => setIsOpen(false)}>
+                      <UserIcon className="w-5 h-5 text-[#2c6e49]" />
+                      <span className="text-sm font-medium text-gray-700">Profile</span>
+                    </Link>
+                    
+                    <Link href="/orders" 
+                      className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                      onClick={() => setIsOpen(false)}>
+                      <ShoppingCartIcon className="w-5 h-5 text-[#2c6e49]" />
+                      <span className="text-sm font-medium text-gray-700">Orders</span>
+                    </Link>
+                    
+                    <Link href="/wishlist" 
+                      className="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                      onClick={() => setIsOpen(false)}>
+                      <div className="flex items-center space-x-2">
+                        <HeartIcon className="w-5 h-5 text-[#2c6e49]" />
+                        <span className="text-sm font-medium text-gray-700">Wishlist</span>
+                      </div>
+                      {wishlistCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {wishlistCount}
+                        </span>
+                      )}
+                    </Link>
+                  </div>
                   
-                  <Link href="/orders" 
-                    className="block py-3 px-2 text-base text-gray-700 hover:text-[#2c6e49] hover:bg-gray-50 font-medium border-b border-gray-100"
-                    onClick={() => setIsOpen(false)}>
-                    <ShoppingCartIcon className="w-5 h-5 inline mr-2" />
-                    Orders
-                  </Link>
-                  
-                  <Link href="/wishlist" 
-                    className="block py-3 px-2 text-base text-gray-700 hover:text-[#2c6e49] hover:bg-gray-50 font-medium border-b border-gray-100"
-                    onClick={() => setIsOpen(false)}>
-                    <HeartIcon className="w-5 h-5 inline mr-2" />
-                    Wishlist
-                    {wishlistCount > 0 && (
-                      <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                        {wishlistCount}
-                      </span>
-                    )}
-                  </Link>
-                  
-                  {/* Prominent Logout Button */}
+                  {/* HIGHLY VISIBLE LOGOUT BUTTON */}
                   <button 
                     onClick={handleLogout} 
-                    className="mt-4 w-full flex items-center justify-center space-x-2 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition"
+                    className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 border-2 border-red-400"
                   >
-                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                    <span>Sign Out</span>
+                    <ArrowRightOnRectangleIcon className="w-6 h-6" />
+                    <span>SIGN OUT</span>
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col space-y-3 px-2">
+                <div className="flex flex-col space-y-3">
                   <Link href="/login" 
                     className="w-full bg-[#2c6e49] text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition"
                     onClick={() => setIsOpen(false)}>
@@ -254,9 +266,9 @@ export default function Navbar() {
             {/* Cart Summary */}
             <div className="mt-4 pt-4 border-t border-gray-200 px-2">
               <Link href="/cart" 
-                className="flex items-center justify-between py-2"
+                className="flex items-center justify-between py-2 hover:text-[#2c6e49] transition"
                 onClick={() => setIsOpen(false)}>
-                <span className="text-base font-medium text-gray-700">Cart</span>
+                <span className="text-base font-medium text-gray-700">Shopping Cart</span>
                 {cartCount > 0 && (
                   <span className="bg-[#ffd700] text-gray-900 text-sm px-3 py-1 rounded-full font-bold">
                     {cartCount} {cartCount === 1 ? 'item' : 'items'}
