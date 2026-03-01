@@ -36,16 +36,13 @@ export default function LoginPage() {
         throw new Error(data.error || 'Invalid email or password')
       }
       
-      // Check if MFA is required
       const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
       
       if (!mfaError && mfaData.nextLevel === 'aal2' && mfaData.nextLevel !== mfaData.currentLevel) {
-        // MFA required - get factors
         const { data: factors } = await supabase.auth.mfa.listFactors()
         const verifiedFactor = factors?.factors?.find(f => f.status === 'verified')
         
         if (verifiedFactor) {
-          // Create challenge
           const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
             factorId: verifiedFactor.id
           })
@@ -60,7 +57,6 @@ export default function LoginPage() {
         }
       }
       
-      // No MFA required
       router.push('/')
       router.refresh()
     } catch (err: any) {
@@ -100,46 +96,24 @@ export default function LoginPage() {
             Enter the 6-digit code from your authenticator app
           </p>
         </div>
-
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-            
-            <div className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  value={mfaCode}
-                  onChange={(e) => setMfaCode(e.target.value)}
-                  placeholder="000000"
-                  maxLength={6}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49] text-center text-2xl tracking-widest"
-                />
-              </div>
-
-              <div>
-                <button
-                  onClick={handleMFAVerify}
-                  disabled={loading || mfaCode.length !== 6}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2c6e49] hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2c6e49] disabled:opacity-50"
-                >
-                  {loading ? 'Verifying...' : 'Verify'}
-                </button>
-              </div>
-              
-              <div className="text-center">
-                <button
-                  onClick={() => router.push('/login')}
-                  className="text-sm text-gray-600 hover:text-gray-900"
-                >
-                  Back to login
-                </button>
-              </div>
-            </div>
+            {error && <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">{error}</div>}
+            <input
+              type="text"
+              value={mfaCode}
+              onChange={(e) => setMfaCode(e.target.value)}
+              placeholder="000000"
+              maxLength={6}
+              className="w-full px-3 py-2 border text-center text-2xl tracking-widest rounded-lg mb-4"
+            />
+            <button
+              onClick={handleMFAVerify}
+              disabled={loading || mfaCode.length !== 6}
+              className="w-full bg-[#2c6e49] text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+              {loading ? 'Verifying...' : 'Verify'}
+            </button>
           </div>
         </div>
       </div>
@@ -156,75 +130,41 @@ export default function LoginPage() {
             </div>
           </Link>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or <Link href="/signup" className="font-medium text-[#2c6e49] hover:text-green-700">create a new account</Link>
+          Or <Link href="/signup" className="text-[#2c6e49] hover:underline">create an account</Link>
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-          
+          {error && <div className="mb-4 bg-red-50 text-red-700 p-3 rounded-lg">{error}</div>}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49] sm:text-sm"
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49] sm:text-sm"
-                />
-              </div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              />
             </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-[#2c6e49] focus:ring-[#2c6e49] border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
-              </div>
-              <div className="text-sm">
-                <Link href="/forgot-password" className="font-medium text-[#2c6e49] hover:text-green-700">
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
-
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2c6e49] hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2c6e49] disabled:opacity-50"
+                className="w-full bg-[#2c6e49] text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
