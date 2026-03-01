@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { MagnifyingGlassIcon, ShoppingCartIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ShoppingCartIcon, UserIcon, Bars3Icon, XMarkIcon, HeartIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase/client'
+import { useWishlist } from '@/context/WishlistContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,12 +18,12 @@ export default function Navbar() {
   const [showSearch, setShowSearch] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const { wishlistCount } = useWishlist()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     
-    // Load cart count
     try {
       const cart = localStorage.getItem('cart')
       if (cart) {
@@ -31,7 +32,6 @@ export default function Navbar() {
       }
     } catch (e) { console.error('Error loading cart:', e) }
 
-    // Get user
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -111,6 +111,17 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* Wishlist */}
+            <Link href="/wishlist" className="p-2 hover:text-[#2c6e49] relative">
+              <HeartIcon className="w-5 h-5 lg:w-6 lg:h-6" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart */}
             <Link href="/cart" className="p-2 hover:text-[#2c6e49] relative">
               <ShoppingCartIcon className="w-5 h-5 lg:w-6 lg:h-6" />
               {cartCount > 0 && (
@@ -134,6 +145,9 @@ export default function Navbar() {
                     </Link>
                     <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setUserMenuOpen(false)}>
                       Orders
+                    </Link>
+                    <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setUserMenuOpen(false)}>
+                      Wishlist
                     </Link>
                     <div className="border-t my-1"></div>
                     <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
@@ -175,6 +189,14 @@ export default function Navbar() {
             ))}
             
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <Link href="/wishlist" className="p-2 relative">
+                <HeartIcon className="w-6 h-6" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               <Link href="/cart" className="p-2 relative">
                 <ShoppingCartIcon className="w-6 h-6" />
                 {cartCount > 0 && (
