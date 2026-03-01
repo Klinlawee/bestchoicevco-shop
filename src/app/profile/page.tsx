@@ -21,8 +21,9 @@ export default function ProfilePage() {
         router.push('/login') 
       } else { 
         setUser(user) 
+        // Check if MFA is enrolled
         const { data: mfaData } = await supabase.auth.mfa.listFactors()
-        setMfaEnrolled(mfaData?.factors?.some(f => f.status === 'verified') || false)
+        setMfaEnrolled(mfaData?.all?.some(f => f.status === 'verified') || false)
       }
       setLoading(false)
     }
@@ -83,8 +84,9 @@ export default function ProfilePage() {
             </p>
           </div>
           
+          {/* MFA Status Section */}
           <div className="border-t pt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Two-Factor Authentication</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Two-Factor Authentication (2FA)</label>
             <p className="text-sm mb-3">
               {mfaEnrolled ? (
                 <span className="text-green-600 flex items-center gap-1">
