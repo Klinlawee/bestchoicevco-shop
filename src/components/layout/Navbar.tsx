@@ -42,13 +42,13 @@ export default function Navbar() {
 
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      console.log('Current user:', user) // Debug log
+      console.log('Current user:', user)
       setUser(user)
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', session?.user) // Debug log
+      console.log('Auth state changed:', session?.user)
       setUser(session?.user ?? null)
     })
 
@@ -107,7 +107,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop Icons */}
+          {/* Desktop Icons - FIXED USER STATE */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-5">
             <div className="relative">
               <button className="p-2 hover:text-[#2c6e49]" onClick={() => setShowSearch(!showSearch)}>
@@ -139,34 +139,71 @@ export default function Navbar() {
               )}
             </Link>
             
+            {/* Desktop User Menu - CORRECT CONDITIONAL */}
             {user ? (
               <div className="relative">
-                <button className="p-2 hover:text-[#2c6e49] flex items-center" onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                <button 
+                  className="flex items-center space-x-1 p-2 hover:text-[#2c6e49] transition" 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
                   <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                  <span className="ml-1 text-sm hidden lg:block">{user.user_metadata?.full_name || 'Account'}</span>
+                  <span className="text-sm hidden lg:block">{user.user_metadata?.full_name || 'Account'}</span>
                 </button>
+                
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setUserMenuOpen(false)}>
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    </div>
+                    
+                    <Link href="/profile" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}>
+                      <UserIcon className="w-4 h-4 inline mr-2" />
                       Profile
                     </Link>
-                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setUserMenuOpen(false)}>
+                    
+                    <Link href="/orders" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}>
+                      <ShoppingCartIcon className="w-4 h-4 inline mr-2" />
                       Orders
                     </Link>
-                    <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setUserMenuOpen(false)}>
+                    
+                    <Link href="/wishlist" 
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setUserMenuOpen(false)}>
+                      <HeartIcon className="w-4 h-4 inline mr-2" />
                       Wishlist
+                      {wishlistCount > 0 && (
+                        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {wishlistCount}
+                        </span>
+                      )}
                     </Link>
+                    
                     <div className="border-t my-1"></div>
-                    <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                    
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium"
+                    >
+                      <ArrowRightOnRectangleIcon className="w-4 h-4 inline mr-2" />
                       Sign Out
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link href="/login" className="p-2 hover:text-[#2c6e49]">
-                <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-              </Link>
+              <div className="flex items-center space-x-2">
+                <Link href="/login" className="p-2 hover:text-[#2c6e49]">
+                  <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
+                </Link>
+                <Link href="/signup" className="text-sm font-medium text-[#2c6e49] hover:text-green-700 hidden lg:block">
+                  Sign Up
+                </Link>
+              </div>
             )}
           </div>
 
@@ -176,7 +213,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Navigation - FIXED USER STATE */}
+        {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 border-t bg-white">
             {/* Search Bar */}
@@ -199,9 +236,8 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* User Section - DIRECT CONDITIONAL RENDERING */}
+            {/* Mobile User Section - FIXED */}
             {user ? (
-              /* LOGGED IN STATE - SHOW LOGOUT */
               <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
                 {/* User Info */}
                 <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
@@ -209,7 +245,7 @@ export default function Navbar() {
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
                 
-                {/* User Action Links */}
+                {/* User Actions */}
                 <div className="space-y-2">
                   <Link href="/profile" 
                     className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
@@ -240,17 +276,16 @@ export default function Navbar() {
                   </Link>
                 </div>
                 
-                {/* PROMINENT LOGOUT BUTTON */}
+                {/* Logout Button */}
                 <button 
                   onClick={handleLogout} 
-                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 border-2 border-red-400"
+                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95"
                 >
                   <ArrowRightOnRectangleIcon className="w-6 h-6" />
                   <span>SIGN OUT</span>
                 </button>
               </div>
             ) : (
-              /* LOGGED OUT STATE - SHOW SIGN IN/CREATE ACCOUNT */
               <div className="mt-4 pt-4 border-t-2 border-gray-200 px-2">
                 <div className="flex flex-col space-y-3">
                   <Link href="/login" 
@@ -267,7 +302,7 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Cart Summary - Always Visible */}
+            {/* Cart Summary */}
             <div className="mt-4 pt-4 border-t border-gray-200 px-2">
               <Link href="/cart" 
                 className="flex items-center justify-between py-2 hover:text-[#2c6e49] transition"
