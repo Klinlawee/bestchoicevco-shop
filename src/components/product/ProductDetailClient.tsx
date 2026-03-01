@@ -17,7 +17,7 @@ interface Product {
   images: string[]; 
   category: string;
   inStock: boolean;
-  keywords?: string[]; // Add optional keywords to match the type
+  keywords?: string[];
 }
 
 interface ProductDetailClientProps {
