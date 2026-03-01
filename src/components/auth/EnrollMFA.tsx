@@ -72,7 +72,6 @@ export function EnrollMFA({ onEnrolled, onCancelled }: {
           <p className="text-gray-600 mb-4">
             Scan this QR code with Google Authenticator or Authy, then click "Send Code"
           </p>
-          {/* Note: You'll need to display the QR code - Supabase provides it in the enrollment data */}
           <button 
             onClick={onSendOTPClicked} 
             className="bg-[#2c6e49] text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"

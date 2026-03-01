@@ -72,9 +72,6 @@ export default function ProfilePage() {
           <div>
             <h2 className="text-xl font-semibold">{user.user_metadata?.full_name || 'User'}</h2>
             <p className="text-gray-600">{user.email}</p>
-            <p className="text-gray-600 text-sm mt-1">
-              📱 {user.user_metadata?.phone || 'No phone number provided'}
-            </p>
           </div>
         </div>
         
