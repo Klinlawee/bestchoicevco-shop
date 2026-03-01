@@ -7,9 +7,17 @@ import { useRouter } from 'next/navigation'
 import WishlistButton from './WishlistButton'
 
 interface Product {
-  id: string; name: string; price: number; currency: string; size: string;
-  description: string; benefits: string[]; images: string[]; category: string;
+  id: string; 
+  name: string; 
+  price: number; 
+  currency: string; 
+  size: string;
+  description: string; 
+  benefits: string[]; 
+  images: string[]; 
+  category: string;
   inStock: boolean;
+  keywords?: string[]; // Add optional keywords to match the type
 }
 
 interface ProductDetailClientProps {
