@@ -42,11 +42,13 @@ export default function Navbar() {
 
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
+      console.log('Current user:', user) // Debug log
       setUser(user)
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed:', session?.user) // Debug log
       setUser(session?.user ?? null)
     })
 
@@ -174,7 +176,7 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Navigation - HIGHLY VISIBLE LOGOUT */}
+        {/* Mobile Navigation - FIXED USER STATE */}
         {isOpen && (
           <div className="md:hidden py-4 border-t bg-white">
             {/* Search Bar */}
@@ -197,57 +199,59 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* User Section - HIGHLIGHTED */}
-            <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
-              {user ? (
-                <>
-                  {/* User Info with Background */}
-                  <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
-                    <p className="text-sm font-semibold text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                  </div>
+            {/* User Section - DIRECT CONDITIONAL RENDERING */}
+            {user ? (
+              /* LOGGED IN STATE - SHOW LOGOUT */
+              <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
+                {/* User Info */}
+                <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
+                  <p className="text-sm font-semibold text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+                
+                {/* User Action Links */}
+                <div className="space-y-2">
+                  <Link href="/profile" 
+                    className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                    onClick={() => setIsOpen(false)}>
+                    <UserIcon className="w-5 h-5 text-[#2c6e49]" />
+                    <span className="text-sm font-medium text-gray-700">Profile</span>
+                  </Link>
                   
-                  {/* User Action Links */}
-                  <div className="space-y-2">
-                    <Link href="/profile" 
-                      className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
-                      onClick={() => setIsOpen(false)}>
-                      <UserIcon className="w-5 h-5 text-[#2c6e49]" />
-                      <span className="text-sm font-medium text-gray-700">Profile</span>
-                    </Link>
-                    
-                    <Link href="/orders" 
-                      className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
-                      onClick={() => setIsOpen(false)}>
-                      <ShoppingCartIcon className="w-5 h-5 text-[#2c6e49]" />
-                      <span className="text-sm font-medium text-gray-700">Orders</span>
-                    </Link>
-                    
-                    <Link href="/wishlist" 
-                      className="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
-                      onClick={() => setIsOpen(false)}>
-                      <div className="flex items-center space-x-2">
-                        <HeartIcon className="w-5 h-5 text-[#2c6e49]" />
-                        <span className="text-sm font-medium text-gray-700">Wishlist</span>
-                      </div>
-                      {wishlistCount > 0 && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                          {wishlistCount}
-                        </span>
-                      )}
-                    </Link>
-                  </div>
+                  <Link href="/orders" 
+                    className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                    onClick={() => setIsOpen(false)}>
+                    <ShoppingCartIcon className="w-5 h-5 text-[#2c6e49]" />
+                    <span className="text-sm font-medium text-gray-700">Orders</span>
+                  </Link>
                   
-                  {/* HIGHLY VISIBLE LOGOUT BUTTON */}
-                  <button 
-                    onClick={handleLogout} 
-                    className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 border-2 border-red-400"
-                  >
-                    <ArrowRightOnRectangleIcon className="w-6 h-6" />
-                    <span>SIGN OUT</span>
-                  </button>
-                </>
-              ) : (
+                  <Link href="/wishlist" 
+                    className="flex items-center justify-between py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
+                    onClick={() => setIsOpen(false)}>
+                    <div className="flex items-center space-x-2">
+                      <HeartIcon className="w-5 h-5 text-[#2c6e49]" />
+                      <span className="text-sm font-medium text-gray-700">Wishlist</span>
+                    </div>
+                    {wishlistCount > 0 && (
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Link>
+                </div>
+                
+                {/* PROMINENT LOGOUT BUTTON */}
+                <button 
+                  onClick={handleLogout} 
+                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95 border-2 border-red-400"
+                >
+                  <ArrowRightOnRectangleIcon className="w-6 h-6" />
+                  <span>SIGN OUT</span>
+                </button>
+              </div>
+            ) : (
+              /* LOGGED OUT STATE - SHOW SIGN IN/CREATE ACCOUNT */
+              <div className="mt-4 pt-4 border-t-2 border-gray-200 px-2">
                 <div className="flex flex-col space-y-3">
                   <Link href="/login" 
                     className="w-full bg-[#2c6e49] text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition"
@@ -260,10 +264,10 @@ export default function Navbar() {
                     Create Account
                   </Link>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Cart Summary */}
+            {/* Cart Summary - Always Visible */}
             <div className="mt-4 pt-4 border-t border-gray-200 px-2">
               <Link href="/cart" 
                 className="flex items-center justify-between py-2 hover:text-[#2c6e49] transition"
