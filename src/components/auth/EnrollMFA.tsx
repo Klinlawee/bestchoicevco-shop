@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 export function EnrollMFA({ onEnrolled, onCancelled }: { 
   onEnrolled: () => void, 
@@ -11,6 +11,7 @@ export function EnrollMFA({ onEnrolled, onCancelled }: {
   const [verifyCode, setVerifyCode] = useState('')
   const [error, setError] = useState('')
   const [challengeId, setChallengeId] = useState('')
+  const supabase = createClient()
 
   const onEnrollClicked = async () => {
     try {
