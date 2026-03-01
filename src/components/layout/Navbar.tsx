@@ -61,6 +61,7 @@ export default function Navbar() {
     await supabase.auth.signOut()
     setUser(null)
     setUserMenuOpen(false)
+    setIsOpen(false) // close mobile menu on logout
     router.push('/')
     router.refresh()
   }
@@ -189,7 +190,7 @@ export default function Navbar() {
             ))}
             
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <Link href="/wishlist" className="p-2 relative">
+              <Link href="/wishlist" className="p-2 relative" onClick={() => setIsOpen(false)}>
                 <HeartIcon className="w-6 h-6" />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -197,7 +198,7 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
-              <Link href="/cart" className="p-2 relative">
+              <Link href="/cart" className="p-2 relative" onClick={() => setIsOpen(false)}>
                 <ShoppingCartIcon className="w-6 h-6" />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-[#ffd700] text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
@@ -208,13 +209,29 @@ export default function Navbar() {
               
               {user ? (
                 <div className="flex items-center space-x-4">
-                  <Link href="/profile" className="p-2"><UserIcon className="w-6 h-6" /></Link>
-                  <button onClick={handleLogout} className="text-sm text-red-600 font-medium">Sign Out</button>
+                  <Link href="/profile" className="p-2" onClick={() => setIsOpen(false)}>
+                    <UserIcon className="w-6 h-6" />
+                  </Link>
+                  <button 
+                    onClick={handleLogout} 
+                    className="text-sm font-medium text-red-600 hover:text-red-800 px-2 py-1 rounded border border-red-200 hover:bg-red-50"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               ) : (
-                <Link href="/login" className="p-2"><UserIcon className="w-6 h-6" /></Link>
+                <Link href="/login" className="p-2" onClick={() => setIsOpen(false)}>
+                  <UserIcon className="w-6 h-6" />
+                </Link>
               )}
             </div>
+
+            {/* Show user email in mobile menu when logged in */}
+            {user && (
+              <div className="mt-2 text-xs text-gray-500 text-center border-t pt-2">
+                Signed in as {user.email}
+              </div>
+            )}
           </div>
         )}
       </div>
