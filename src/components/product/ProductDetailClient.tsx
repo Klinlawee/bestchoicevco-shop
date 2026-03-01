@@ -5,20 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import WishlistButton from './WishlistButton'
-
-interface Product {
-  id: string; 
-  name: string; 
-  price: number; 
-  currency: string; 
-  size: string;
-  description: string; 
-  benefits: string[]; 
-  images: string[]; 
-  category: string;
-  inStock: boolean;
-  keywords?: string[];
-}
+import { Product } from '@/types/product' // Import the Product type
 
 interface ProductDetailClientProps {
   product: Product
