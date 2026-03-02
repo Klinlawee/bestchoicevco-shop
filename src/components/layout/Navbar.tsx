@@ -24,6 +24,7 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
   const { wishlistCount } = useWishlist()
@@ -41,14 +42,19 @@ export default function Navbar() {
     } catch (e) { console.error('Error loading cart:', e) }
 
     const getUser = async () => {
+      setIsLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
-      console.log('Current user:', user)
+      console.log('🔍 Navbar - Current user:', user)
+      console.log('🔍 Navbar - User email:', user?.email)
+      console.log('🔍 Navbar - User metadata:', user?.user_metadata)
       setUser(user)
+      setIsLoading(false)
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', session?.user)
+      console.log('🔍 Navbar - Auth state changed:', session?.user)
+      console.log('🔍 Navbar - Session user email:', session?.user?.email)
       setUser(session?.user ?? null)
     })
 
@@ -68,6 +74,7 @@ export default function Navbar() {
   }
 
   const handleLogout = async () => {
+    console.log('🔍 Logging out...')
     await supabase.auth.signOut()
     setUser(null)
     setUserMenuOpen(false)
@@ -83,6 +90,20 @@ export default function Navbar() {
     { name: 'FAQ', href: '/faq' },
     { name: 'Contact', href: '/contact' },
   ]
+
+  if (isLoading) {
+    return (
+      <nav className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="container-custom">
+          <div className="flex justify-between items-center h-16 sm:h-20">
+            <div className="h-12 w-12 bg-gray-200 rounded-full animate-pulse"></div>
+            <div className="h-8 w-32 bg-gray-200 rounded animate-pulse hidden sm:block"></div>
+            <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+      </nav>
+    )
+  }
 
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -107,7 +128,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Desktop Icons - FIXED USER STATE */}
+          {/* Desktop Icons */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-5">
             <div className="relative">
               <button className="p-2 hover:text-[#2c6e49]" onClick={() => setShowSearch(!showSearch)}>
@@ -139,22 +160,24 @@ export default function Navbar() {
               )}
             </Link>
             
-            {/* Desktop User Menu - CORRECT CONDITIONAL */}
+            {/* Desktop User Menu - WITH DEBUG INFO */}
             {user ? (
               <div className="relative">
                 <button 
-                  className="flex items-center space-x-1 p-2 hover:text-[#2c6e49] transition" 
+                  className="flex items-center space-x-1 p-2 hover:text-[#2c6e49] transition border-2 border-green-500 rounded-lg" 
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                 >
                   <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                  <span className="text-sm hidden lg:block">{user.user_metadata?.full_name || 'Account'}</span>
+                  <span className="text-sm hidden lg:block">{user.user_metadata?.full_name || user.email || 'Account'}</span>
+                  <span className="ml-1 text-xs bg-green-500 text-white px-1 rounded">✓</span>
                 </button>
                 
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border z-50">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 border z-50">
+                    <div className="px-4 py-3 bg-green-50 border-b border-green-100">
+                      <p className="text-sm font-medium text-gray-900">Logged in as:</p>
+                      <p className="text-sm font-semibold text-green-700">{user.user_metadata?.full_name || 'User'}</p>
+                      <p className="text-xs text-gray-600 truncate">{user.email}</p>
                     </div>
                     
                     <Link href="/profile" 
@@ -196,13 +219,11 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 border-2 border-red-500 rounded-lg p-1">
                 <Link href="/login" className="p-2 hover:text-[#2c6e49]">
                   <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
                 </Link>
-                <Link href="/signup" className="text-sm font-medium text-[#2c6e49] hover:text-green-700 hidden lg:block">
-                  Sign Up
-                </Link>
+                <span className="text-xs text-red-500 font-bold">NOT LOGGED IN</span>
               </div>
             )}
           </div>
@@ -216,7 +237,6 @@ export default function Navbar() {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 border-t bg-white">
-            {/* Search Bar */}
             <form onSubmit={handleSearch} className="mb-4 px-2">
               <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                 <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
@@ -227,7 +247,6 @@ export default function Navbar() {
               </div>
             </form>
 
-            {/* Navigation Links */}
             {navLinks.map((link) => (
               <Link key={link.name} href={link.href} 
                 className="block py-3 px-2 text-base text-gray-700 hover:text-[#2c6e49] hover:bg-gray-50 font-medium border-b border-gray-100" 
@@ -236,16 +255,15 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* Mobile User Section - FIXED */}
+            {/* Mobile User Section - WITH DEBUG */}
             {user ? (
-              <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
-                {/* User Info */}
-                <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
+              <div className="mt-4 pt-4 border-t-2 border-green-500 bg-green-50 rounded-lg mx-2 p-3">
+                <div className="bg-white rounded-lg p-3 mb-3 border border-green-200">
+                  <p className="text-xs text-green-600 font-bold mb-1">✓ LOGGED IN</p>
                   <p className="text-sm font-semibold text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
                 
-                {/* User Actions */}
                 <div className="space-y-2">
                   <Link href="/profile" 
                     className="flex items-center space-x-2 py-2 px-3 bg-white rounded-lg border border-gray-200 hover:border-[#2c6e49] transition"
@@ -276,17 +294,17 @@ export default function Navbar() {
                   </Link>
                 </div>
                 
-                {/* Logout Button */}
                 <button 
                   onClick={handleLogout} 
-                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all transform active:scale-95"
+                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all"
                 >
                   <ArrowRightOnRectangleIcon className="w-6 h-6" />
                   <span>SIGN OUT</span>
                 </button>
               </div>
             ) : (
-              <div className="mt-4 pt-4 border-t-2 border-gray-200 px-2">
+              <div className="mt-4 pt-4 border-t-2 border-red-500 bg-red-50 rounded-lg mx-2 p-3">
+                <p className="text-xs text-red-600 font-bold mb-2 text-center">⚠️ NOT LOGGED IN</p>
                 <div className="flex flex-col space-y-3">
                   <Link href="/login" 
                     className="w-full bg-[#2c6e49] text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition"
@@ -302,7 +320,6 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Cart Summary */}
             <div className="mt-4 pt-4 border-t border-gray-200 px-2">
               <Link href="/cart" 
                 className="flex items-center justify-between py-2 hover:text-[#2c6e49] transition"
