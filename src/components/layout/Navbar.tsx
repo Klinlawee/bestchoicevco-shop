@@ -41,28 +41,59 @@ export default function Navbar() {
       }
     } catch (e) { console.error('Error loading cart:', e) }
 
+    // Get user from Supabase
     const getUser = async () => {
       setIsLoading(true)
-      const { data: { user } } = await supabase.auth.getUser()
-      console.log('🔍 Navbar - Current user:', user)
-      console.log('🔍 Navbar - User email:', user?.email)
-      console.log('🔍 Navbar - User metadata:', user?.user_metadata)
-      setUser(user)
-      setIsLoading(false)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('🔍 Session:', session)
+        
+        if (error) {
+          console.error('Session error:', error)
+        }
+        
+        if (session?.user) {
+          console.log('✅ User found:', session.user.email)
+          setUser(session.user)
+        } else {
+          console.log('❌ No user session found')
+          setUser(null)
+        }
+      } catch (err) {
+        console.error('Error getting session:', err)
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
+    
     getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('🔍 Navbar - Auth state changed:', session?.user)
-      console.log('🔍 Navbar - Session user email:', session?.user?.email)
-      setUser(session?.user ?? null)
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔍 Auth event:', event)
+      console.log('🔍 Session after event:', session)
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ User signed in:', session.user.email)
+        setUser(session.user)
+      } else if (event === 'SIGNED_OUT') {
+        console.log('❌ User signed out')
+        setUser(null)
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token refreshed')
+        setUser(session?.user ?? null)
+      }
+      
+      setUserMenuOpen(false)
+      setIsOpen(false)
     })
 
     return () => {
       window.removeEventListener('scroll', handleScroll)
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, router])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,12 +106,16 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     console.log('🔍 Logging out...')
-    await supabase.auth.signOut()
-    setUser(null)
-    setUserMenuOpen(false)
-    setIsOpen(false)
-    router.push('/')
-    router.refresh()
+    try {
+      await supabase.auth.signOut()
+      setUser(null)
+      setUserMenuOpen(false)
+      setIsOpen(false)
+      router.push('/')
+      router.refresh()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
   }
 
   const navLinks = [
@@ -160,22 +195,21 @@ export default function Navbar() {
               )}
             </Link>
             
-            {/* Desktop User Menu - WITH DEBUG INFO */}
+            {/* Desktop User Menu - FIXED */}
             {user ? (
               <div className="relative">
                 <button 
-                  className="flex items-center space-x-1 p-2 hover:text-[#2c6e49] transition border-2 border-green-500 rounded-lg" 
+                  className="flex items-center space-x-1 p-2 hover:text-[#2c6e49] transition border border-green-500 rounded-lg" 
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                 >
                   <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                  <span className="text-sm hidden lg:block">{user.user_metadata?.full_name || user.email || 'Account'}</span>
-                  <span className="ml-1 text-xs bg-green-500 text-white px-1 rounded">✓</span>
+                  <span className="text-sm hidden lg:block">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account'}</span>
                 </button>
                 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 border z-50">
                     <div className="px-4 py-3 bg-green-50 border-b border-green-100">
-                      <p className="text-sm font-medium text-gray-900">Logged in as:</p>
+                      <p className="text-sm font-medium text-gray-900">Signed in as:</p>
                       <p className="text-sm font-semibold text-green-700">{user.user_metadata?.full_name || 'User'}</p>
                       <p className="text-xs text-gray-600 truncate">{user.email}</p>
                     </div>
@@ -219,12 +253,9 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2 border-2 border-red-500 rounded-lg p-1">
-                <Link href="/login" className="p-2 hover:text-[#2c6e49]">
-                  <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                </Link>
-                <span className="text-xs text-red-500 font-bold">NOT LOGGED IN</span>
-              </div>
+              <Link href="/login" className="p-2 hover:text-[#2c6e49]">
+                <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
+              </Link>
             )}
           </div>
 
@@ -255,11 +286,10 @@ export default function Navbar() {
               </Link>
             ))}
             
-            {/* Mobile User Section - WITH DEBUG */}
+            {/* Mobile User Section */}
             {user ? (
-              <div className="mt-4 pt-4 border-t-2 border-green-500 bg-green-50 rounded-lg mx-2 p-3">
-                <div className="bg-white rounded-lg p-3 mb-3 border border-green-200">
-                  <p className="text-xs text-green-600 font-bold mb-1">✓ LOGGED IN</p>
+              <div className="mt-4 pt-4 border-t-2 border-gray-200 bg-gray-50 rounded-lg mx-2 p-3">
+                <div className="bg-white rounded-lg p-3 mb-3 border border-gray-200">
                   <p className="text-sm font-semibold text-gray-900">{user.user_metadata?.full_name || 'User'}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
@@ -296,15 +326,14 @@ export default function Navbar() {
                 
                 <button 
                   onClick={handleLogout} 
-                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-4 px-4 rounded-lg font-bold text-base shadow-lg hover:from-red-600 hover:to-red-700 transition-all"
+                  className="mt-4 w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-4 rounded-lg font-medium shadow-lg hover:from-red-600 hover:to-red-700 transition-all"
                 >
-                  <ArrowRightOnRectangleIcon className="w-6 h-6" />
-                  <span>SIGN OUT</span>
+                  <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                  <span>Sign Out</span>
                 </button>
               </div>
             ) : (
-              <div className="mt-4 pt-4 border-t-2 border-red-500 bg-red-50 rounded-lg mx-2 p-3">
-                <p className="text-xs text-red-600 font-bold mb-2 text-center">⚠️ NOT LOGGED IN</p>
+              <div className="mt-4 pt-4 border-t-2 border-gray-200 px-2">
                 <div className="flex flex-col space-y-3">
                   <Link href="/login" 
                     className="w-full bg-[#2c6e49] text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition"

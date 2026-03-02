@@ -10,14 +10,28 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    })
 
     if (error) {
+      console.error('Login error:', error.message)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    console.log('Login successful for:', data.user?.email)
+    
+    // Return success with user data
+    return NextResponse.json({ 
+      success: true,
+      user: {
+        email: data.user?.email,
+        name: data.user?.user_metadata?.full_name
+      }
+    }, { status: 200 })
   } catch (error) {
+    console.error('Login error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
