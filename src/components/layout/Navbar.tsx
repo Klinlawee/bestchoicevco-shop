@@ -27,11 +27,16 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [showLoginMessage, setShowLoginMessage] = useState(false)
-  const [showLogoutMessage, setShowLogoutMessage] = useState(false)
+  const [toast, setToast] = useState<{message: string; type: 'success' | 'error' | 'info'} | null>(null)
   const router = useRouter()
   const supabase = createClient()
   const { wishlistCount } = useWishlist()
+
+  // Show toast message
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -45,6 +50,7 @@ export default function Navbar() {
       }
     } catch (e) { console.error('Error loading cart:', e) }
 
+    // Get initial user session
     const getUser = async () => {
       setIsLoading(true)
       try {
@@ -55,11 +61,10 @@ export default function Navbar() {
         }
         
         if (session?.user) {
+          console.log('User found:', session.user.email)
           setUser(session.user)
-          // Show login success message
-          setShowLoginMessage(true)
-          setTimeout(() => setShowLoginMessage(false), 3000)
         } else {
+          console.log('No user session')
           setUser(null)
         }
       } catch (err) {
@@ -72,15 +77,23 @@ export default function Navbar() {
     
     getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setUser(session.user)
-        setShowLoginMessage(true)
-        setTimeout(() => setShowLoginMessage(false), 3000)
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event)
+      console.log('Session:', session)
+      
+      if (event === 'SIGNED_IN') {
+        setUser(session?.user)
+        showToast('Successfully logged in! Welcome back!', 'success')
+        router.refresh()
       } else if (event === 'SIGNED_OUT') {
         setUser(null)
-        setShowLogoutMessage(true)
-        setTimeout(() => setShowLogoutMessage(false), 3000)
+        showToast('You have been logged out. See you again!', 'info')
+        router.refresh()
+      } else if (event === 'USER_UPDATED') {
+        setUser(session?.user)
+      } else if (event === 'TOKEN_REFRESHED') {
+        setUser(session?.user)
       }
       
       setUserMenuOpen(false)
@@ -104,14 +117,18 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
       setUser(null)
       setUserMenuOpen(false)
       setIsOpen(false)
+      showToast('Successfully logged out!', 'info')
       router.push('/')
       router.refresh()
     } catch (error) {
       console.error('Logout error:', error)
+      showToast('Error logging out. Please try again.', 'error')
     }
   }
 
@@ -139,18 +156,19 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Login/Logout Toast Messages */}
-      {showLoginMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in-down flex items-center space-x-2">
-          <CheckBadgeIcon className="w-6 h-6" />
-          <span className="font-medium">Successfully logged in! Welcome back!</span>
-        </div>
-      )}
-      
-      {showLogoutMessage && (
-        <div className="fixed top-20 right-4 z-50 bg-orange-500 text-white px-6 py-3 rounded-lg shadow-lg animate-fade-in-down flex items-center space-x-2">
-          <ArrowLeftOnRectangleIcon className="w-6 h-6" />
-          <span className="font-medium">You have been logged out. See you again!</span>
+      {/* Toast Message */}
+      {toast && (
+        <div 
+          className={`fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-lg animate-fade-in-down flex items-center space-x-2 ${
+            toast.type === 'success' ? 'bg-green-500' : 
+            toast.type === 'error' ? 'bg-red-500' : 
+            'bg-blue-500'
+          } text-white`}
+        >
+          {toast.type === 'success' && <CheckBadgeIcon className="w-6 h-6" />}
+          {toast.type === 'error' && <XMarkIcon className="w-6 h-6" />}
+          {toast.type === 'info' && <ArrowLeftOnRectangleIcon className="w-6 h-6" />}
+          <span className="font-medium">{toast.message}</span>
         </div>
       )}
 
@@ -208,7 +226,7 @@ export default function Navbar() {
                 )}
               </Link>
               
-              {/* Desktop User Menu - WITH CLEAR STATUS INDICATOR */}
+              {/* Desktop User Menu */}
               {user ? (
                 <div className="relative">
                   <button 
@@ -217,14 +235,10 @@ export default function Navbar() {
                   >
                     <div className="relative">
                       <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                      {/* Green status dot for logged in */}
-                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></span>
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
                     </div>
                     <span className="text-sm hidden lg:block font-medium">
                       {user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account'}
-                    </span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hidden lg:inline-block">
-                      Logged In
                     </span>
                   </button>
                   
@@ -286,7 +300,6 @@ export default function Navbar() {
                   <Link href="/login" className="flex items-center space-x-2 p-2 hover:text-[#2c6e49] transition group relative">
                     <div className="relative">
                       <UserIcon className="w-5 h-5 lg:w-6 lg:h-6" />
-                      {/* Gray status dot for logged out */}
                       <span className="absolute -top-1 -right-1 w-3 h-3 bg-gray-400 rounded-full border-2 border-white"></span>
                     </div>
                     <span className="text-sm hidden lg:block text-gray-500">Not signed in</span>
