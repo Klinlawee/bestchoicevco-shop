@@ -7,17 +7,14 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
-          // Get cookie from document.cookie
           const cookies = document.cookie.split('; ')
           const cookie = cookies.find(c => c.startsWith(`${name}=`))
           return cookie?.split('=')[1]
         },
         set(name: string, value: string, options: any) {
-          // Set cookie with proper attributes
           document.cookie = `${name}=${value}; path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
         },
         remove(name: string, options: any) {
-          // Remove cookie by setting max-age to 0
           document.cookie = `${name}=; path=/; max-age=0`
         }
       }
