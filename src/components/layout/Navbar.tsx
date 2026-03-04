@@ -32,7 +32,6 @@ export default function Navbar() {
   const supabase = createClient()
   const { wishlistCount } = useWishlist()
 
-  // Show toast message
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 3000)
@@ -50,37 +49,45 @@ export default function Navbar() {
       }
     } catch (e) { console.error('Error loading cart:', e) }
 
-    // Get initial user session
-    const getUser = async () => {
+    // Force session check
+    const checkSession = async () => {
       setIsLoading(true)
       try {
+        console.log('🔍 Checking session...')
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('Session error:', error)
+          console.error('❌ Session error:', error)
         }
         
         if (session?.user) {
-          console.log('User found:', session.user.email)
+          console.log('✅ User session found:', session.user.email)
           setUser(session.user)
         } else {
-          console.log('No user session')
+          console.log('❌ No user session')
           setUser(null)
+          
+          // Try to refresh session
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          if (refreshData?.session?.user) {
+            console.log('✅ Session refreshed:', refreshData.session.user.email)
+            setUser(refreshData.session.user)
+          }
         }
       } catch (err) {
-        console.error('Error getting session:', err)
+        console.error('❌ Session check error:', err)
         setUser(null)
       } finally {
         setIsLoading(false)
       }
     }
     
-    getUser()
+    checkSession()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event)
-      console.log('Session:', session)
+      console.log('🔍 Auth event:', event)
+      console.log('🔍 Session:', session?.user?.email || 'null')
       
       if (event === 'SIGNED_IN') {
         setUser(session?.user)
@@ -90,9 +97,9 @@ export default function Navbar() {
         setUser(null)
         showToast('You have been logged out. See you again!', 'info')
         router.refresh()
-      } else if (event === 'USER_UPDATED') {
-        setUser(session?.user)
       } else if (event === 'TOKEN_REFRESHED') {
+        setUser(session?.user)
+      } else if (event === 'USER_UPDATED') {
         setUser(session?.user)
       }
       
@@ -105,15 +112,6 @@ export default function Navbar() {
       subscription.unsubscribe()
     }
   }, [supabase, router])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-      setShowSearch(false)
-      setSearchQuery('')
-    }
-  }
 
   const handleLogout = async () => {
     try {
@@ -129,6 +127,15 @@ export default function Navbar() {
     } catch (error) {
       console.error('Logout error:', error)
       showToast('Error logging out. Please try again.', 'error')
+    }
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
+      setShowSearch(false)
+      setSearchQuery('')
     }
   }
 
@@ -156,7 +163,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Toast Message */}
       {toast && (
         <div 
           className={`fixed top-20 right-4 z-50 px-6 py-3 rounded-lg shadow-lg animate-fade-in-down flex items-center space-x-2 ${
