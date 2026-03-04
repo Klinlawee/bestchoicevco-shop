@@ -114,36 +114,63 @@ export default function SignupPage() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-              <input id="name" type="text" required value={name} onChange={(e) => setName(e.target.value)}
+              <input 
+                id="name" 
+                type="text" 
+                required 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="John Doe" />
+                placeholder="John Doe" 
+              />
             </div>
             
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+              <input 
+                id="email" 
+                type="email" 
+                required 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="you@example.com" />
+                placeholder="you@example.com" 
+              />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-              <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+              <input 
+                id="password" 
+                type="password" 
+                required 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="••••••••" />
+                placeholder="••••••••" 
+              />
               <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
             </div>
             
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
-              <input id="confirmPassword" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+              <input 
+                id="confirmPassword" 
+                type="password" 
+                required 
+                value={confirmPassword} 
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                placeholder="••••••••" />
+                placeholder="••••••••" 
+              />
             </div>
             
             <div>
-              <button type="submit" disabled={loading}
-                className="w-full bg-[#2c6e49] text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-[#2c6e49] text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
                 {loading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
