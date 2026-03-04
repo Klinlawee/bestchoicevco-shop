@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     }
 
     console.log('Login successful for:', data.user?.email)
+    console.log('Session created:', !!data.session)
     
-    // Return success with user data
     return NextResponse.json({ 
       success: true,
       user: {
