@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -10,24 +10,35 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
+  const hasChecked = useRef(false)
 
   useEffect(() => {
+    if (hasChecked.current) return
+    hasChecked.current = true
+
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-      } else {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error || !user) {
+          router.push('/login')
+          return
+        }
+        
         setUser(user)
+      } catch (error) {
+        router.push('/login')
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     checkUser()
   }, [router, supabase])
 
   // Mock orders - In production, fetch from database
   const orders = [
-    { id: 'ORD-001', date: '2026-02-20', total: 350.00, status: 'Delivered', items: 3 },
-    { id: 'ORD-002', date: '2026-02-18', total: 180.00, status: 'Processing', items: 2 }
+    { id: 'ORD-001', date: '2026-03-01', total: 350.00, status: 'Delivered', items: 3 },
+    { id: 'ORD-002', date: '2026-03-03', total: 180.00, status: 'Processing', items: 2 }
   ]
 
   if (loading) {
@@ -38,6 +49,8 @@ export default function OrdersPage() {
       </div>
     )
   }
+
+  if (!user) return null
 
   return (
     <div className="container-custom py-12">

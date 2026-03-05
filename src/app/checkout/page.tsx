@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 interface CartItem {
   id: string; name: string; price: number; size: string; quantity: number
@@ -12,19 +13,50 @@ export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartTotal, setCartTotal] = useState(0)
   const [processing, setProcessing] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
     fullName: '', email: '', phone: '', address: '', city: ''
   })
   const router = useRouter()
+  const supabase = createClient()
+  const hasChecked = useRef(false)
 
   useEffect(() => {
+    if (hasChecked.current) return
+    hasChecked.current = true
+
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error || !user) {
+          router.push('/login')
+          return
+        }
+        
+        setUser(user)
+        setFormData(prev => ({
+          ...prev,
+          fullName: user.user_metadata?.full_name || '',
+          email: user.email || ''
+        }))
+      } catch (error) {
+        router.push('/login')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+
     const savedCart = localStorage.getItem('cart')
     if (savedCart) {
       const items = JSON.parse(savedCart)
       setCart(items)
       setCartTotal(items.reduce((sum: number, item: CartItem) => sum + (item.price * item.quantity), 0))
     }
-  }, [])
+  }, [router, supabase])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -76,6 +108,15 @@ export default function CheckoutPage() {
       return
     }
     handlePaystackPayment()
+  }
+
+  if (loading) {
+    return (
+      <div className="container-custom py-12 text-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#2c6e49] border-r-transparent"></div>
+        <p className="mt-4">Loading...</p>
+      </div>
+    )
   }
 
   if (cart.length === 0) {
@@ -144,27 +185,16 @@ export default function CheckoutPage() {
               ))}
             </div>
             <div className="border-t pt-3 space-y-2">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>GHS {cartTotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between items-start">
-                <span>Delivery</span>
-                <span className="text-sm text-gray-600 text-right max-w-[180px]">
-                  Our delivery team will contact you with the fee
-                </span>
-              </div>
-              <div className="border-t pt-2 font-bold flex justify-between text-lg">
-                <span>Total (excluding delivery)</span>
-                <span>GHS {cartTotal.toFixed(2)}</span>
-              </div>
+              <div className="flex justify-between"><span>Subtotal</span><span>GHS {cartTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Delivery</span><span className="text-green-600">Free</span></div>
+              <div className="border-t pt-2 font-bold flex justify-between text-lg"><span>Total</span><span>GHS {cartTotal.toFixed(2)}</span></div>
             </div>
             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
               <p className="text-xs text-blue-700 flex items-center">
-                <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Delivery fee will be confirmed by our team after order placement</span>
+                You'll be redirected to Paystack's secure payment page.
               </p>
             </div>
             <p className="text-xs text-gray-500 mt-4 text-center">Secured by Paystack. Your payment information is encrypted.</p>

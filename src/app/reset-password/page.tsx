@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -15,17 +15,19 @@ export default function ResetPasswordPage() {
   const [isValidSession, setIsValidSession] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const hasChecked = useRef(false)
 
   useEffect(() => {
+    if (hasChecked.current) return
+    hasChecked.current = true
+
     const handleResetSession = async () => {
       console.log('🔍 Checking reset session...')
       
-      // Get the hash fragment from the URL (Supabase sends token in hash)
       const hash = window.location.hash
       console.log('📍 URL Hash:', hash)
       
       if (hash) {
-        // Supabase automatically processes the hash and creates a session
         const { data, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -159,12 +161,6 @@ export default function ResetPasswordPage() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-          
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
