@@ -61,11 +61,13 @@ export default function Navbar() {
         
         if (session?.user) {
           console.log('✅ User session found:', session.user.email)
+          console.log('✅ User metadata:', session.user.user_metadata)
           setUser(session.user)
         } else {
           console.log('❌ No user session')
           setUser(null)
           
+          // Try to refresh session
           const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
           if (refreshData?.session?.user) {
             console.log('✅ Session refreshed:', refreshData.session.user.email)
@@ -84,20 +86,27 @@ export default function Navbar() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔍 Auth event:', event)
-      console.log('🔍 Session:', session?.user?.email || 'null')
+      console.log('🔍 Session user:', session?.user?.email || 'null')
       
       if (event === 'SIGNED_IN') {
+        console.log('✅ User signed in:', session?.user?.email)
         setUser(session?.user)
         showToast('Successfully logged in! Welcome back!', 'success')
         router.refresh()
       } else if (event === 'SIGNED_OUT') {
+        console.log('👋 User signed out')
         setUser(null)
         showToast('You have been logged out. See you again!', 'info')
         router.refresh()
       } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Token refreshed')
         setUser(session?.user)
       } else if (event === 'USER_UPDATED') {
+        console.log('📝 User updated')
         setUser(session?.user)
+      } else if (event === 'PASSWORD_RECOVERY') {
+        console.log('🔐 Password recovery mode')
+        // Don't set user during password recovery
       }
       
       setUserMenuOpen(false)
@@ -226,10 +235,11 @@ export default function Navbar() {
                 )}
               </Link>
               
+              {/* Desktop User Menu */}
               {user ? (
                 <div className="relative">
                   <button 
-                    className="flex items-center space-x-2 p-2 hover:text-[#2c6e49] transition relative group"
+                    className="flex items-center space-x-2 p-2 hover:text-[#2c6e49] transition relative group border border-green-500 rounded-lg"
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                   >
                     <div className="relative">
@@ -238,6 +248,9 @@ export default function Navbar() {
                     </div>
                     <span className="text-sm hidden lg:block font-medium">
                       {user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account'}
+                    </span>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hidden lg:inline-block">
+                      Logged In
                     </span>
                   </button>
                   
