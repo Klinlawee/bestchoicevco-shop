@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -31,6 +31,7 @@ export default function Navbar() {
   const router = useRouter()
   const supabase = createClient()
   const { wishlistCount } = useWishlist()
+  const hasChecked = useRef(false)
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
     setToast({ message, type })
@@ -50,9 +51,14 @@ export default function Navbar() {
     } catch (e) { console.error('Error loading cart:', e) }
 
     const checkSession = async () => {
+      if (hasChecked.current) return
+      hasChecked.current = true
+      
       setIsLoading(true)
       try {
         console.log('🔍 Checking session...')
+        console.log('📦 All cookies:', document.cookie)
+        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -63,16 +69,10 @@ export default function Navbar() {
           console.log('✅ User session found:', session.user.email)
           console.log('✅ User metadata:', session.user.user_metadata)
           setUser(session.user)
+          showToast('Successfully logged in! Welcome back!', 'success')
         } else {
           console.log('❌ No user session')
           setUser(null)
-          
-          // Try to refresh session
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
-          if (refreshData?.session?.user) {
-            console.log('✅ Session refreshed:', refreshData.session.user.email)
-            setUser(refreshData.session.user)
-          }
         }
       } catch (err) {
         console.error('❌ Session check error:', err)
@@ -104,9 +104,6 @@ export default function Navbar() {
       } else if (event === 'USER_UPDATED') {
         console.log('📝 User updated')
         setUser(session?.user)
-      } else if (event === 'PASSWORD_RECOVERY') {
-        console.log('🔐 Password recovery mode')
-        // Don't set user during password recovery
       }
       
       setUserMenuOpen(false)
@@ -235,7 +232,6 @@ export default function Navbar() {
                 )}
               </Link>
               
-              {/* Desktop User Menu */}
               {user ? (
                 <div className="relative">
                   <button 

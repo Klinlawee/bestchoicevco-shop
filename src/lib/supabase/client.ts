@@ -7,46 +7,71 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
-          console.log('🔍 Reading cookie:', name)
+          console.log('🔍 Looking for cookie:', name)
           
-          // Try multiple cookie name patterns
-          const possibleNames = [
+          // Log all cookies for debugging
+          const allCookies = document.cookie.split('; ').reduce((acc, cookie) => {
+            const [key, value] = cookie.split('=')
+            acc[key] = value
+            return acc
+          }, {} as Record<string, string>)
+          
+          console.log('📦 All cookies:', Object.keys(allCookies))
+          
+          // Try multiple patterns
+          const patterns = [
             name, // Original name
-            name.replace('sb-', ''), // Without sb- prefix
             `sb-${name}`, // With sb- prefix
-            name.split('-').pop() || name, // Just the last part
-            'sb-access-token',
-            'sb-refresh-token'
+            name.replace('sb-', ''), // Without sb- prefix
+            `sb-${name.split('-').pop()}`, // Short version
+            'sb-access-token', // Common name
+            'sb-refresh-token' // Common name
           ]
           
-          console.log('🔍 Trying patterns:', possibleNames)
+          console.log('🔍 Trying patterns:', patterns)
           
-          const cookies = document.cookie.split('; ')
-          
-          for (const cookieName of possibleNames) {
-            const cookie = cookies.find(c => c.startsWith(`${cookieName}=`))
+          for (const pattern of patterns) {
+            const cookie = document.cookie.split('; ').find(c => c.startsWith(`${pattern}=`))
             if (cookie) {
               const value = cookie.split('=')[1]
-              console.log('✅ Found cookie:', cookieName)
+              console.log('✅ Found cookie with pattern:', pattern)
               return value
             }
           }
           
-          console.log('❌ Cookie not found:', name)
+          console.log('❌ No cookie found for:', name)
           return null
         },
         set(name: string, value: string, options: any) {
           console.log('📝 Setting cookie:', name)
-          // Set both with and without sb- prefix to be safe
-          document.cookie = `${name}=${value}; path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
+          
+          // Set both prefixed and unprefixed versions
+          const baseOptions = `path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
+          
+          // Set original name
+          document.cookie = `${name}=${value}; ${baseOptions}`
+          
+          // Set with sb- prefix if not already present
           if (!name.startsWith('sb-')) {
-            document.cookie = `sb-${name}=${value}; path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
+            document.cookie = `sb-${name}=${value}; ${baseOptions}`
+          }
+          
+          // Also set common names for compatibility
+          if (name.includes('auth-token')) {
+            document.cookie = `sb-access-token=${value}; ${baseOptions}`
+          }
+          if (name.includes('refresh-token')) {
+            document.cookie = `sb-refresh-token=${value}; ${baseOptions}`
           }
         },
         remove(name: string, options: any) {
           console.log('🗑️ Removing cookie:', name)
-          document.cookie = `${name}=; path=/; max-age=0`
-          document.cookie = `sb-${name}=; path=/; max-age=0`
+          const baseOptions = `path=/; max-age=0`
+          
+          document.cookie = `${name}=; ${baseOptions}`
+          document.cookie = `sb-${name}=; ${baseOptions}`
+          document.cookie = `sb-access-token=; ${baseOptions}`
+          document.cookie = `sb-refresh-token=; ${baseOptions}`
         }
       }
     }
