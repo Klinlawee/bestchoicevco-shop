@@ -11,12 +11,15 @@ export function createClient() {
           
           // Try multiple cookie name patterns
           const possibleNames = [
-            name,
-            `sb-${name}`,
-            `sb-${name.split('-').pop()}`,
+            name, // Original name
+            name.replace('sb-', ''), // Without sb- prefix
+            `sb-${name}`, // With sb- prefix
+            name.split('-').pop() || name, // Just the last part
             'sb-access-token',
             'sb-refresh-token'
           ]
+          
+          console.log('🔍 Trying patterns:', possibleNames)
           
           const cookies = document.cookie.split('; ')
           
@@ -34,11 +37,16 @@ export function createClient() {
         },
         set(name: string, value: string, options: any) {
           console.log('📝 Setting cookie:', name)
+          // Set both with and without sb- prefix to be safe
           document.cookie = `${name}=${value}; path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
+          if (!name.startsWith('sb-')) {
+            document.cookie = `sb-${name}=${value}; path=/; max-age=${options?.maxAge || 31536000}; samesite=lax; ${options?.secure ? 'secure;' : ''}`
+          }
         },
         remove(name: string, options: any) {
           console.log('🗑️ Removing cookie:', name)
           document.cookie = `${name}=; path=/; max-age=0`
+          document.cookie = `sb-${name}=; path=/; max-age=0`
         }
       }
     }
