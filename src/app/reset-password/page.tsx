@@ -15,18 +15,29 @@ export default function ResetPasswordPage() {
   const [pageState, setPageState] = useState<'verifying' | 'invalid' | 'ready'>('verifying')
   const router = useRouter()
   const supabase = createClient()
-  const hasProcessed = useRef(false)
+  const hasCompleted = useRef(false) // Track if we've already completed setup
 
   useEffect(() => {
-    // Prevent multiple processing
-    if (hasProcessed.current) return
-    hasProcessed.current = true
+    // If we've already completed, don't do anything
+    if (hasCompleted.current) {
+      return
+    }
 
     const processResetToken = async () => {
       try {
         console.log('🔍 Processing reset password token...')
         
-        // Check if we have a hash in the URL (Supabase puts token here)
+        // Check if we already have a valid session
+        const { data: sessionData } = await supabase.auth.getSession()
+        
+        if (sessionData.session) {
+          console.log('✅ Valid session found, showing reset form')
+          setPageState('ready')
+          hasCompleted.current = true // Mark as completed
+          return
+        }
+
+        // If no session yet, check the URL hash
         const hash = window.location.hash
         console.log('📍 URL Hash:', hash || 'No hash found')
         
@@ -37,25 +48,19 @@ export default function ResetPasswordPage() {
           return
         }
 
-        // Get the current session
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
-        
-        if (sessionError) {
-          console.error('❌ Session error:', sessionError)
-          setPageState('invalid')
-          setError('Invalid or expired reset link. Please request a new one.')
-          return
-        }
-
-        if (!sessionData.session) {
-          console.log('❌ No session found with token')
-          setPageState('invalid')
-          setError('Invalid or expired reset link. Please request a new one.')
-          return
-        }
-
-        console.log('✅ Valid reset session found for:', sessionData.session.user.email)
-        setPageState('ready')
+        // Wait a moment for Supabase to process the hash
+        setTimeout(async () => {
+          const { data: checkData } = await supabase.auth.getSession()
+          if (checkData.session) {
+            console.log('✅ Session established after delay')
+            setPageState('ready')
+            hasCompleted.current = true
+          } else {
+            console.log('❌ Still no session')
+            setPageState('invalid')
+            setError('Invalid or expired reset link. Please request a new one.')
+          }
+        }, 1000)
         
       } catch (err) {
         console.error('❌ Error processing reset:', err)
@@ -65,13 +70,12 @@ export default function ResetPasswordPage() {
     }
 
     processResetToken()
-  }, [supabase])
+  }, [supabase]) // No dependencies that change
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    // Validate passwords
     if (!password || !confirmPassword) {
       setError('Please enter both passwords')
       return
@@ -104,7 +108,7 @@ export default function ResetPasswordPage() {
       console.log('✅ Password updated successfully')
       setSuccess(true)
       
-      // Sign out after password reset (optional - they'll need to log in again)
+      // Sign out after password reset
       await supabase.auth.signOut()
       
       // Redirect to login after 3 seconds
