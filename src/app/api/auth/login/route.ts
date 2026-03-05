@@ -31,7 +31,6 @@ export async function POST(request: Request) {
       
       const cookieStore = await cookies()
       
-      // Set multiple cookie variations to ensure at least one works
       const cookieOptions = {
         path: '/',
         maxAge: data.session.expires_in,
@@ -40,22 +39,10 @@ export async function POST(request: Request) {
         sameSite: 'lax' as const
       }
       
-      // Set with sb- prefix (what Supabase expects)
+      // Set the cookie in the format Supabase expects
       cookieStore.set('sb-plwlcekaqvirxbxlxekn-auth-token', data.session.access_token, cookieOptions)
-      cookieStore.set('sb-plwlcekaqvirxbxlxekn-auth-token.0', data.session.access_token, cookieOptions)
-      cookieStore.set('sb-plwlcekaqvirxbxlxekn-refresh-token', data.session.refresh_token, cookieOptions)
       
-      // Set without prefix (what your screenshot shows)
-      cookieStore.set('plwlcekaqvirxbxlxekn-auth-token', data.session.access_token, {
-        ...cookieOptions,
-        httpOnly: false // Allow JavaScript access
-      })
-      
-      // Set common names
-      cookieStore.set('sb-access-token', data.session.access_token, cookieOptions)
-      cookieStore.set('sb-refresh-token', data.session.refresh_token, cookieOptions)
-      
-      console.log('✅ Multiple cookies set')
+      console.log('✅ Cookie set successfully')
     }
 
     return NextResponse.json({ 
