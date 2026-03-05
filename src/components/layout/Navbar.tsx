@@ -59,6 +59,7 @@ export default function Navbar() {
         console.log('🔍 Checking session...')
         console.log('📦 All cookies:', document.cookie)
         
+        // First try to get session
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -67,12 +68,25 @@ export default function Navbar() {
         
         if (session?.user) {
           console.log('✅ User session found:', session.user.email)
-          console.log('✅ User metadata:', session.user.user_metadata)
+          console.log('✅ Session expires:', new Date(session.expires_at! * 1000).toLocaleString())
           setUser(session.user)
           showToast('Successfully logged in! Welcome back!', 'success')
         } else {
-          console.log('❌ No user session')
-          setUser(null)
+          console.log('❌ No user session, trying to refresh...')
+          
+          // Try to refresh the session
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+          
+          if (refreshError) {
+            console.error('❌ Refresh error:', refreshError)
+          } else if (refreshData.session) {
+            console.log('✅ Session refreshed for:', refreshData.session.user.email)
+            setUser(refreshData.session.user)
+            showToast('Session refreshed!', 'success')
+          } else {
+            console.log('❌ No session after refresh')
+            setUser(null)
+          }
         }
       } catch (err) {
         console.error('❌ Session check error:', err)
@@ -87,6 +101,7 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔍 Auth event:', event)
       console.log('🔍 Session user:', session?.user?.email || 'null')
+      console.log('🔍 Event timestamp:', new Date().toLocaleString())
       
       if (event === 'SIGNED_IN') {
         console.log('✅ User signed in:', session?.user?.email)
@@ -96,8 +111,7 @@ export default function Navbar() {
       } else if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out')
         setUser(null)
-        showToast('You have been logged out. See you again!', 'info')
-        router.refresh()
+        // Don't show toast for automatic signouts
       } else if (event === 'TOKEN_REFRESHED') {
         console.log('🔄 Token refreshed')
         setUser(session?.user)
