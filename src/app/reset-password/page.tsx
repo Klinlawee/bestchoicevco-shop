@@ -12,49 +12,70 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [isValidSession, setIsValidSession] = useState(false)
+  const [pageState, setPageState] = useState<'verifying' | 'invalid' | 'ready'>('verifying')
   const router = useRouter()
   const supabase = createClient()
-  const hasChecked = useRef(false)
+  const hasProcessed = useRef(false)
 
   useEffect(() => {
-    if (hasChecked.current) return
-    hasChecked.current = true
+    // Prevent multiple processing
+    if (hasProcessed.current) return
+    hasProcessed.current = true
 
-    const handleResetSession = async () => {
-      console.log('🔍 Checking reset session...')
-      
-      const hash = window.location.hash
-      console.log('📍 URL Hash:', hash)
-      
-      if (hash) {
-        const { data, error } = await supabase.auth.getSession()
+    const processResetToken = async () => {
+      try {
+        console.log('🔍 Processing reset password token...')
         
-        if (error) {
-          console.error('❌ Session error:', error)
-          setError('Invalid or expired reset link')
+        // Check if we have a hash in the URL (Supabase puts token here)
+        const hash = window.location.hash
+        console.log('📍 URL Hash:', hash || 'No hash found')
+        
+        if (!hash) {
+          console.log('❌ No reset token found')
+          setPageState('invalid')
+          setError('No reset token found. Please request a new password reset link.')
           return
         }
+
+        // Get the current session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
         
-        if (data.session) {
-          console.log('✅ Valid reset session found')
-          setIsValidSession(true)
-        } else {
-          console.log('❌ No session found')
-          setError('Invalid or expired reset link')
+        if (sessionError) {
+          console.error('❌ Session error:', sessionError)
+          setPageState('invalid')
+          setError('Invalid or expired reset link. Please request a new one.')
+          return
         }
-      } else {
-        console.log('❌ No hash in URL')
-        setError('Invalid reset link')
+
+        if (!sessionData.session) {
+          console.log('❌ No session found with token')
+          setPageState('invalid')
+          setError('Invalid or expired reset link. Please request a new one.')
+          return
+        }
+
+        console.log('✅ Valid reset session found for:', sessionData.session.user.email)
+        setPageState('ready')
+        
+      } catch (err) {
+        console.error('❌ Error processing reset:', err)
+        setPageState('invalid')
+        setError('An error occurred. Please try again.')
       }
     }
 
-    handleResetSession()
+    processResetToken()
   }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate passwords
+    if (!password || !confirmPassword) {
+      setError('Please enter both passwords')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -69,24 +90,55 @@ export default function ResetPasswordPage() {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      console.log('📝 Updating password...')
+      
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       })
 
-      if (error) throw error
+      if (updateError) {
+        console.error('❌ Password update error:', updateError)
+        throw updateError
+      }
 
+      console.log('✅ Password updated successfully')
       setSuccess(true)
+      
+      // Sign out after password reset (optional - they'll need to log in again)
+      await supabase.auth.signOut()
+      
+      // Redirect to login after 3 seconds
       setTimeout(() => {
         router.push('/login')
       }, 3000)
+      
     } catch (err: any) {
-      setError(err.message || 'Failed to reset password')
+      console.error('❌ Error:', err)
+      setError(err.message || 'Failed to reset password. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  if (error) {
+  // Show verifying state
+  if (pageState === 'verifying') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+              <div className="h-6 w-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Verifying your reset link...</h3>
+            <p className="mt-2 text-sm text-gray-500">Please wait a moment.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show invalid/error state
+  if (pageState === 'invalid') {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -97,10 +149,13 @@ export default function ResetPasswordPage() {
               </svg>
             </div>
             <h3 className="mt-4 text-lg font-medium text-gray-900">Invalid Reset Link</h3>
-            <p className="mt-2 text-sm text-gray-500">{error}</p>
-            <div className="mt-6">
-              <Link href="/forgot-password" className="text-[#2c6e49] hover:text-green-700 font-medium">
-                Request new reset link
+            <p className="mt-2 text-sm text-gray-500">{error || 'The password reset link is invalid or has expired.'}</p>
+            <div className="mt-6 space-y-3">
+              <Link href="/forgot-password" className="block w-full bg-[#2c6e49] text-white py-2 px-4 rounded-md hover:bg-green-700 transition">
+                Request New Reset Link
+              </Link>
+              <Link href="/login" className="block w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 transition">
+                Back to Login
               </Link>
             </div>
           </div>
@@ -109,21 +164,7 @@ export default function ResetPasswordPage() {
     )
   }
 
-  if (!isValidSession) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-              <div className="h-6 w-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Verifying reset link...</h3>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
+  // Show success state
   if (success) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -134,16 +175,22 @@ export default function ResetPasswordPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">Password reset successful!</h3>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">Password Reset Successful!</h3>
             <p className="mt-2 text-sm text-gray-500">
-              Your password has been reset. You'll be redirected to login shortly.
+              Your password has been reset successfully. You'll be redirected to the login page in a few seconds.
             </p>
+            <div className="mt-6">
+              <Link href="/login" className="text-[#2c6e49] hover:text-green-700 font-medium">
+                Go to Login Now
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     )
   }
 
+  // Show reset password form (ready state)
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -155,12 +202,21 @@ export default function ResetPasswordPage() {
           </Link>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Set new password
+          Set New Password
         </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Please enter your new password below.
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
@@ -172,9 +228,11 @@ export default function ResetPasswordPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49]"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49]"
                 placeholder="••••••••"
+                minLength={6}
               />
+              <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
             </div>
 
             <div>
@@ -187,18 +245,26 @@ export default function ResetPasswordPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49]"
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#2c6e49] focus:border-[#2c6e49]"
                 placeholder="••••••••"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2c6e49] hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2c6e49] disabled:opacity-50"
-            >
-              {loading ? 'Resetting...' : 'Reset password'}
-            </button>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#2c6e49] hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2c6e49] disabled:opacity-50"
+              >
+                {loading ? 'Resetting Password...' : 'Reset Password'}
+              </button>
+            </div>
+
+            <div className="text-center text-sm">
+              <Link href="/login" className="font-medium text-[#2c6e49] hover:text-green-700">
+                Back to Login
+              </Link>
+            </div>
           </form>
         </div>
       </div>
