@@ -32,12 +32,31 @@ export async function POST(request: Request) {
     if (data.session) {
       console.log('📦 Session data:', {
         access_token: data.session.access_token.substring(0, 20) + '...',
-        expires_in: data.session.expires_in,
-        refresh_token: data.session.refresh_token.substring(0, 20) + '...'
+        expires_in: data.session.expires_in
       })
+      
+      // Manually set cookies with the correct names
+      const cookieStore = await cookies()
+      
+      cookieStore.set('sb-access-token', data.session.access_token, {
+        path: '/',
+        maxAge: data.session.expires_in,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      })
+      
+      cookieStore.set('sb-refresh-token', data.session.refresh_token, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 365,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      })
+      
+      console.log('✅ Cookies set manually')
     }
 
-    // Return success with user data
     return NextResponse.json({ 
       success: true,
       user: {

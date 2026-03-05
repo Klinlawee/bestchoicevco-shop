@@ -7,13 +7,30 @@ export function createClient() {
     {
       cookies: {
         get(name: string) {
-          // Log cookie reading for debugging
           console.log('🔍 Reading cookie:', name)
+          
+          // Try multiple cookie name patterns
+          const possibleNames = [
+            name,
+            `sb-${name}`,
+            `sb-${name.split('-').pop()}`,
+            'sb-access-token',
+            'sb-refresh-token'
+          ]
+          
           const cookies = document.cookie.split('; ')
-          const cookie = cookies.find(c => c.startsWith(`${name}=`))
-          const value = cookie?.split('=')[1]
-          console.log('📦 Cookie value:', value ? 'found' : 'not found')
-          return value
+          
+          for (const cookieName of possibleNames) {
+            const cookie = cookies.find(c => c.startsWith(`${cookieName}=`))
+            if (cookie) {
+              const value = cookie.split('=')[1]
+              console.log('✅ Found cookie:', cookieName)
+              return value
+            }
+          }
+          
+          console.log('❌ Cookie not found:', name)
+          return null
         },
         set(name: string, value: string, options: any) {
           console.log('📝 Setting cookie:', name)
