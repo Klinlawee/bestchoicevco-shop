@@ -56,10 +56,6 @@ export default function Navbar() {
       
       setIsLoading(true)
       try {
-        console.log('🔍 Checking session...')
-        console.log('📦 All cookies:', document.cookie)
-        
-        // First try to get session
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
@@ -67,26 +63,9 @@ export default function Navbar() {
         }
         
         if (session?.user) {
-          console.log('✅ User session found:', session.user.email)
-          console.log('✅ Session expires:', new Date(session.expires_at! * 1000).toLocaleString())
           setUser(session.user)
-          showToast('Successfully logged in! Welcome back!', 'success')
         } else {
-          console.log('❌ No user session, trying to refresh...')
-          
-          // Try to refresh the session
-          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
-          
-          if (refreshError) {
-            console.error('❌ Refresh error:', refreshError)
-          } else if (refreshData.session) {
-            console.log('✅ Session refreshed for:', refreshData.session.user.email)
-            setUser(refreshData.session.user)
-            showToast('Session refreshed!', 'success')
-          } else {
-            console.log('❌ No session after refresh')
-            setUser(null)
-          }
+          setUser(null)
         }
       } catch (err) {
         console.error('❌ Session check error:', err)
@@ -98,26 +77,15 @@ export default function Navbar() {
     
     checkSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔍 Auth event:', event)
-      console.log('🔍 Session user:', session?.user?.email || 'null')
-      console.log('🔍 Event timestamp:', new Date().toLocaleString())
-      
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
-        console.log('✅ User signed in:', session?.user?.email)
         setUser(session?.user)
         showToast('Successfully logged in! Welcome back!', 'success')
         router.refresh()
       } else if (event === 'SIGNED_OUT') {
-        console.log('👋 User signed out')
         setUser(null)
-        // Don't show toast for automatic signouts
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('🔄 Token refreshed')
-        setUser(session?.user)
-      } else if (event === 'USER_UPDATED') {
-        console.log('📝 User updated')
-        setUser(session?.user)
+        showToast('You have been logged out. See you again!', 'info')
+        router.refresh()
       }
       
       setUserMenuOpen(false)
@@ -132,18 +100,25 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
+      // Try Supabase logout
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('Logout API error:', error)
+      // Show error but continue with local cleanup
+    } finally {
+      // ALWAYS clear local state and cookies regardless of API success
       setUser(null)
       setUserMenuOpen(false)
       setIsOpen(false)
+      
+      // Force clear all auth cookies
+      document.cookie.split(';').forEach(c => {
+        document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;');
+      });
+      
       showToast('Successfully logged out!', 'info')
       router.push('/')
       router.refresh()
-    } catch (error) {
-      console.error('Logout error:', error)
-      showToast('Error logging out. Please try again.', 'error')
     }
   }
 
@@ -258,9 +233,6 @@ export default function Navbar() {
                     </div>
                     <span className="text-sm hidden lg:block font-medium">
                       {user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account'}
-                    </span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hidden lg:inline-block">
-                      Logged In
                     </span>
                   </button>
                   
