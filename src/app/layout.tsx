@@ -7,6 +7,7 @@ import { WishlistProvider } from '@/context/WishlistContext'
 import Preloader from '@/components/layout/Preloader'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { Analytics } from '@vercel/analytics/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -33,6 +34,7 @@ export default function RootLayout({
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   )
